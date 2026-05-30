@@ -52,7 +52,7 @@ export default function Home() {
         <div className="text-[12px] uppercase tracking-[0.08em] text-muted">
           Olá, {handle}
         </div>
-        <h1 className="display text-[34px] lg:text-[38px] mt-1 leading-none">
+        <h1 className="display text-[28px] sm:text-[32px] lg:text-[38px] mt-1 leading-tight">
           Como foi seu <span className="text-primary">dia</span>?
         </h1>
       </header>
@@ -163,6 +163,9 @@ export default function Home() {
                 {v.symbol} {Math.abs(v.delta).toFixed(1)} vs anterior
               </span>
             )
+          }
+          spark={
+            sparkSeries.length >= 2 ? <Sparkline data={sparkSeries} color="#f0a868" /> : null
           }
         />
       </div>

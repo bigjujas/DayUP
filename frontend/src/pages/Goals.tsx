@@ -61,19 +61,19 @@ export default function Goals() {
   const activeNames = useMemo(() => new Set(goals.map((g) => g.name.toLowerCase())), [goals]);
 
   return (
-    <div className="px-4 lg:px-7 py-5 lg:py-8 max-w-[1280px] mx-auto grid lg:grid-cols-[1fr_360px] gap-5">
-      <section>
+    <div className="px-4 lg:px-7 py-5 lg:py-8 max-w-[1280px] mx-auto flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_360px] gap-5">
+      <section className="min-w-0">
         {/* Header */}
-        <header className="flex items-end justify-between gap-4 px-1 pb-3">
-          <div>
+        <header className="flex items-end justify-between gap-3 px-1 pb-3">
+          <div className="min-w-0 flex-1">
             <div className="text-[12px] uppercase tracking-[0.08em] text-muted">Suas metas</div>
-            <h1 className="display text-[34px] lg:text-[38px] mt-1 leading-none">
+            <h1 className="display text-[26px] sm:text-[30px] lg:text-[38px] mt-1 leading-tight">
               O que você quer <span className="text-primary">conquistar</span>?
             </h1>
           </div>
           <button
             onClick={() => setModal({ initial: null })}
-            className="btn-primary !px-3 lg:!px-4"
+            className="btn-primary !px-3 lg:!px-4 shrink-0"
             aria-label="Nova meta"
           >
             <Plus size={18} />
@@ -199,11 +199,11 @@ function SummaryChip({
         style={
           featured
             ? {
-                background:
-                  "linear-gradient(180deg, rgba(245,181,40,0.22), rgba(245,181,40,0.06))",
-                border: "1px solid rgba(245,181,40,0.4)",
-                color: "#f5b528",
-              }
+              background:
+                "linear-gradient(180deg, rgba(245,181,40,0.22), rgba(245,181,40,0.06))",
+              border: "1px solid rgba(245,181,40,0.4)",
+              color: "#f5b528",
+            }
             : { background: "#281e12", color: "#c9bd9f" }
         }
       >
@@ -274,7 +274,7 @@ function GoalCard({
   const cat = CATEGORY_META[g.category];
   return (
     <article
-      className="relative bg-surface border border-border rounded-card overflow-hidden p-4 lg:p-4 grid grid-cols-[44px_1fr_auto] lg:grid-cols-[48px_1fr_auto_auto] gap-3 lg:gap-4 items-center hover:border-border-2 hover:-translate-y-px transition-all"
+      className="relative bg-surface border border-border rounded-card overflow-hidden p-3.5 lg:p-4 grid grid-cols-[44px_1fr_auto] lg:grid-cols-[48px_1fr_auto_auto] gap-3 lg:gap-4 items-start lg:items-center hover:border-border-2 hover:-translate-y-px transition-all"
     >
       <span
         className="absolute left-0 top-0 bottom-0 w-1"
@@ -293,29 +293,31 @@ function GoalCard({
       </span>
 
       <div className="min-w-0 flex flex-col gap-2">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <h3 className="display text-[17px] lg:text-[18px] leading-none">{g.name}</h3>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h3 className="display text-[16px] lg:text-[18px] leading-tight break-words min-w-0">
+            {g.name}
+          </h3>
           <span
-            className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded"
+            className="text-[10px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded shrink-0"
             style={{ color: cat.color, background: `${cat.color}1f` }}
           >
             {cat.label}
           </span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {WEEKDAY_LABELS.map((d, i) => {
             const on = g.days_of_week.includes(i);
             return (
               <div
                 key={i}
-                className="w-6 h-6 rounded grid place-items-center text-[10px] font-semibold font-mono uppercase"
+                className="w-6 h-6 rounded grid place-items-center text-[10px] font-semibold font-mono uppercase shrink-0"
                 style={
                   on
                     ? {
-                        background: `${cat.color}33`,
-                        border: `1px solid ${cat.color}80`,
-                        color: "#f4ecda",
-                      }
+                      background: `${cat.color}33`,
+                      border: `1px solid ${cat.color}80`,
+                      color: "#f4ecda",
+                    }
                     : { background: "#281e12", color: "#5a4d39" }
                 }
                 title={WEEKDAY_LABELS[i]}
@@ -325,11 +327,19 @@ function GoalCard({
             );
           })}
         </div>
+        {/* Importance pill — mobile only, inside main column */}
+        <div className="lg:hidden mt-0.5">
+          <ImportancePill weight={g.weight} />
+        </div>
       </div>
 
-      <ImportancePill weight={g.weight} />
+      {/* Importance pill — desktop only, own column */}
+      <div className="hidden lg:block">
+        <ImportancePill weight={g.weight} />
+      </div>
 
-      <div className="col-start-1 lg:col-start-auto col-span-3 lg:col-span-1 flex gap-1.5 justify-end">
+      {/* Actions — stacked vertical on mobile, horizontal on desktop */}
+      <div className="flex flex-col lg:flex-row gap-1 lg:gap-1.5">
         <button
           onClick={onEdit}
           className="w-9 h-9 grid place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text hover:border-border border border-transparent transition-colors"
@@ -618,9 +628,9 @@ function GoalModal({
                     style={
                       active
                         ? {
-                            background: `${m.color}1a`,
-                            borderColor: m.color,
-                          }
+                          background: `${m.color}1a`,
+                          borderColor: m.color,
+                        }
                         : { background: "#110d08", borderColor: "#2a1f12" }
                     }
                   >
@@ -719,14 +729,14 @@ function GoalModal({
                     key={d}
                     type="button"
                     onClick={() => toggleDay(i)}
-                    className="flex flex-col items-center gap-0.5 py-3 rounded-lg border text-[11px] uppercase tracking-[0.06em] font-semibold transition-colors min-h-[52px]"
+                    className="flex flex-col items-center gap-0.5 py-3 rounded-lg border text-[12px] uppercase tracking-[0.06em] font-semibold transition-colors min-h-[42px]"
                     style={
                       on
                         ? {
-                            background: "rgba(245,181,40,0.18)",
-                            borderColor: "#f5b528",
-                            color: "#f5b528",
-                          }
+                          background: "rgba(245,181,40,0.18)",
+                          borderColor: "#f5b528",
+                          color: "#f5b528",
+                        }
                         : { background: "#110d08", borderColor: "#2a1f12", color: "#8a7a60" }
                     }
                   >
