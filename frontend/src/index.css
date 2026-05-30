@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-image: theme("backgroundImage.warm-radial");
+    background-attachment: fixed;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: theme("colors.primary");
+    color: theme("colors.ink");
+  }
+
+  :focus-visible {
+    outline: 2px solid theme("colors.primary");
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  .nums {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum", "lnum";
+  }
+
+  .display {
+    font-family: "Oswald", sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+
+  /* ───────── Buttons ───────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+           text-sm font-semibold border border-border bg-surface text-text
+           min-h-[44px] transition-colors;
+  }
+  .btn:hover { border-color: theme("colors.border-2"); }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+           text-sm font-semibold border border-primary bg-primary text-ink
+           min-h-[44px] transition-all hover:bg-primary-2 hover:border-primary-2;
+    box-shadow: 0 8px 24px -10px rgba(245, 181, 40, 0.6);
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg
+           text-sm font-semibold border border-transparent text-text-2
+           min-h-[44px] transition-colors hover:bg-surface hover:border-border hover:text-text;
+  }
+  .btn-lg { @apply px-6 py-3.5 text-[15px]; }
+
+  /* ───────── Cards / surfaces ───────── */
+  .surface {
+    @apply bg-surface border border-border rounded-card;
+  }
+  .surface-raised {
+    background: linear-gradient(180deg, #1e170e, #16110a);
+    @apply border border-border rounded-card;
+  }
+
+  /* ───────── Brand mark ───────── */
+  .brand {
+    @apply inline-flex items-center gap-2.5 font-display font-bold uppercase tracking-[0.02em];
+  }
+  .brand-flame {
+    width: 28px; height: 28px;
+    background: theme("colors.primary");
+    border-radius: 7px;
+    display: grid; place-items: center;
+    color: theme("colors.ink");
+    font-size: 14px;
+    box-shadow: 0 0 0 1px rgba(255, 201, 74, 0.25), 0 8px 24px -8px rgba(245, 181, 40, 0.6);
+  }
+
+  /* ───────── Inputs ───────── */
+  .input {
+    @apply w-full rounded-lg bg-bg-2 border border-border px-3.5 py-3 min-h-[44px]
+           text-text placeholder:text-dim text-[15px] outline-none transition-colors;
+  }
+  .input:focus { border-color: theme("colors.primary"); }
+  .label {
+    @apply block text-[11px] uppercase tracking-[0.1em] text-muted mb-2 font-semibold;
+  }
+
+  /* ───────── Eyebrow / tag ───────── */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] font-bold text-primary;
+  }
+  .eyebrow::before {
+    content: ""; width: 24px; height: 1px; background: theme("colors.primary");
+  }
+
+  .display-unit {
+    font-size: 14px;
+    color: theme("colors.muted");
+    font-family: "Inter", sans-serif;
+    font-weight: 500;
+  }
+
+  .chip-today {
+    @apply inline-flex items-center px-1.5 py-0.5 rounded font-mono text-[9px] font-semibold tracking-[0.12em];
+    background: theme("colors.primary");
+    color: theme("colors.ink");
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Hide scrollbars everywhere but keep scrolling functional */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

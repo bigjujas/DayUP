@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dayup-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dayup
+      POSTGRES_PASSWORD: dayup
+      POSTGRES_DB: dayup
+    ports:
+      - "5432:5432"
+    volumes:
+      - dayup_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dayup -d dayup"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: dayup-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - dayup_redis_data:/data
+
+volumes:
+  dayup_pg_data:
+  dayup_redis_data:
