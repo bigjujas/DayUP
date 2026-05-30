@@ -62,10 +62,11 @@ export const LEVEL_OPTIONS: { value: GoalLevel; label: string; hint: string }[] 
 ];
 
 // ── Tier helpers (match-history style) ───────────────
-export type Tier = "great" | "good" | "okay" | "rough";
+export type Tier = "perfect" | "great" | "good" | "okay" | "rough";
 
 export function tierFromScore(score: number | null): Tier | null {
   if (score === null) return null;
+  if (score >= 100) return "perfect";
   if (score >= 85) return "great";
   if (score >= 65) return "good";
   if (score >= 45) return "okay";
@@ -73,10 +74,11 @@ export function tierFromScore(score: number | null): Tier | null {
 }
 
 export const TIER_META: Record<Tier, { label: string; color: string; bgSoft: string }> = {
-  great: { label: "Excelente", color: "#f5b528", bgSoft: "rgba(245,181,40,0.12)" },
-  good:  { label: "Bom dia",   color: "#8ad36b", bgSoft: "rgba(138,211,107,0.10)" },
-  okay:  { label: "Regular",   color: "#6aa7e8", bgSoft: "rgba(106,167,232,0.10)" },
-  rough: { label: "Difícil",   color: "#e87a6a", bgSoft: "rgba(232,122,106,0.10)" },
+  perfect: { label: "Perfeito",  color: "#f5b528", bgSoft: "rgba(245,181,40,0.14)" },
+  great:   { label: "Excelente", color: "#f5b528", bgSoft: "rgba(245,181,40,0.12)" },
+  good:    { label: "Bom dia",   color: "#8ad36b", bgSoft: "rgba(138,211,107,0.10)" },
+  okay:    { label: "Regular",   color: "#6aa7e8", bgSoft: "rgba(106,167,232,0.10)" },
+  rough:   { label: "Difícil",   color: "#e87a6a", bgSoft: "rgba(232,122,106,0.10)" },
 };
 
 // ── Preset library (frontend-only seeds) ─────────────

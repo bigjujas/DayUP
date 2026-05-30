@@ -93,7 +93,7 @@ function Hero() {
             Novo
           </span>
           <span>
-            Mobile-first com check-in em <b className="text-text">30 segundos</b>
+            Lançamento da <b className="text-text">Primeira versão!</b>
           </span>
         </div>
 
@@ -278,9 +278,9 @@ function PreviewKpi({
       style={
         featured
           ? {
-              background: "linear-gradient(180deg, rgba(245,181,40,0.1), #16110a)",
-              borderColor: "rgba(245,181,40,0.3)",
-            }
+            background: "linear-gradient(180deg, rgba(245,181,40,0.1), #16110a)",
+            borderColor: "rgba(245,181,40,0.3)",
+          }
           : undefined
       }
     >
@@ -344,7 +344,7 @@ function PreviewRow({
 
 function Stats() {
   const items = [
-    { num: "12k+", lbl: "dias registrados pelos usuários" },
+    { num: "8k+", lbl: "dias registrados pelos usuários" },
     { num: "87%", lbl: "mantêm a streak após 30 dias" },
     { num: "2.4×", lbl: "mais consistência vs. checklist comum" },
     { num: "4.9★", lbl: "avaliação média na comunidade" },
@@ -391,7 +391,7 @@ function HowItWorks() {
       num: "03",
       icon: "▲",
       title: "Veja sua jornada",
-      body: "Histórico estilo match history, com streak inteligente que entende Day Off e tendência de 14 dias.",
+      body: "Estilo histórico de partidas, com streak inteligente que entende Day Off e tendência de 14 dias.",
     },
   ];
 
@@ -469,7 +469,7 @@ function Features() {
             Carro-chefe
           </div>
           <h3 className="display text-[22px] lg:text-[24px] uppercase mb-3">
-            Histórico estilo match&nbsp;history
+            Estilo hístorico de partidas
           </h3>
           <p className="text-[14px] text-text-2 leading-relaxed">
             Cada dia vira uma "partida" com tier de qualidade, score e metas completadas. Veja
@@ -621,7 +621,7 @@ function Compare() {
             <span className="text-primary">como uma planilha.</span>
           </>
         }
-        sub="A gente quer que você sinta como um jogador subindo de elo."
+        sub="A gente quer que você sinta como um jogador subindo de nível."
       />
       <div className="grid lg:grid-cols-2 gap-4">
         <CompareCol
@@ -667,10 +667,10 @@ function CompareCol({
       style={
         isGood
           ? {
-              background:
-                "radial-gradient(ellipse at top, rgba(245,181,40,0.1), transparent 60%), #1e170e",
-              borderColor: "rgba(245,181,40,0.3)",
-            }
+            background:
+              "radial-gradient(ellipse at top, rgba(245,181,40,0.1), transparent 60%), #1e170e",
+            borderColor: "rgba(245,181,40,0.3)",
+          }
           : { background: "#16110a", borderColor: "#2a1f12" }
       }
     >
@@ -741,7 +741,7 @@ function Testimonials() {
         eyebrow="Depoimentos"
         title={
           <>
-            Pessoas que <span className="text-primary">subiram de elo</span>
+            Pessoas que <span className="text-primary">subiram de nível</span>
             <br />
             na vida real
           </>
@@ -865,7 +865,7 @@ function FinalCta() {
       />
       <div className="relative">
         <h2 className="display text-[36px] lg:text-[56px] uppercase leading-none m-0 mb-4">
-          Pronto pra <span className="text-primary">subir de elo</span>
+          Pronto pra <span className="text-primary">subir de nível</span>
           <br />
           na vida real?
         </h2>
@@ -900,8 +900,7 @@ function Footer() {
             </span>
           </Link>
           <p className="text-text-2 text-[13px] mt-3 max-w-[280px]">
-            Suba de nível, um dia por vez. O tracker que parece um jogo — porque vida é o melhor
-            jogo que tem.
+            Suba de nível, um dia por vez — O tracker que transforma seus dias em partidas.
           </p>
         </div>
         <FooterCol title="Produto" links={["Como funciona", "Recursos", "Preços", "Mudanças"]} />

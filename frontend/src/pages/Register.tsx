@@ -29,7 +29,7 @@ export default function Register() {
 
   return (
     <AuthLayout
-      title={<>Bora <span className="text-primary">subir de elo</span></>}
+      title={<>Bora <span className="text-primary">subir de nível</span></>}
       subtitle="Crie sua conta em 30 segundos."
     >
       <form onSubmit={submit} className="flex flex-col gap-3.5">

@@ -63,8 +63,14 @@ def issue_session(response: Response, user: User, settings: Settings) -> str:
 
 
 def clear_session(response: Response, settings: Settings) -> None:
-    response.delete_cookie(settings.session_cookie_name, path="/")
-    response.delete_cookie(settings.csrf_cookie_name, path="/")
+    # Browsers só aceitam o cookie de deleção se SameSite/Secure baterem com os do cookie original.
+    for name in (settings.session_cookie_name, settings.csrf_cookie_name):
+        response.delete_cookie(
+            key=name,
+            path="/",
+            samesite="lax",
+            secure=settings.session_cookie_secure,
+        )
 
 
 def _read_user_id_from_cookie(request: Request, settings: Settings) -> str | None:

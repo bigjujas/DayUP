@@ -64,9 +64,8 @@ def logout(
     response: Response,
     _user: User = Depends(get_current_user),
     settings: Settings = Depends(get_settings),
-) -> Response:
+) -> None:
     clear_session(response, settings)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/me", response_model=UserOut)

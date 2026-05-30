@@ -120,6 +120,24 @@
     background: theme("colors.primary");
     color: theme("colors.ink");
   }
+
+  /* Toque rosa sutil para dias com score 100 (mantém visual amarelo do tier) */
+  .perfect-glow {
+    animation: perfect-pulse 3.4s ease-in-out infinite;
+  }
+}
+
+@keyframes perfect-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(236, 72, 153, 0.12),
+      0 4px 16px -6px rgba(236, 72, 153, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(236, 72, 153, 0.22),
+      0 6px 22px -6px rgba(236, 72, 153, 0.30);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

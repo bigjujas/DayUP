@@ -55,11 +55,17 @@ export default function DayRow({ log, goalsById, isToday }: Props) {
   return (
     <Link
       to={`/app/check-in/${log.date}`}
-      className="grid grid-cols-[6px_1fr_auto] lg:grid-cols-[6px_168px_1fr_110px] bg-surface border border-border rounded-card overflow-hidden hover:border-border-2 hover:-translate-y-px transition-all"
+      className={[
+        "grid grid-cols-[6px_1fr_auto] lg:grid-cols-[6px_168px_1fr_110px] bg-surface border border-border rounded-card overflow-hidden hover:-translate-y-px transition-all",
+        tier === "perfect" ? "perfect-glow" : "hover:border-border-2",
+      ].join(" ")}
       style={{
-        background: tier
-          ? `linear-gradient(90deg, ${meta?.bgSoft}, transparent 50%), #16110a`
-          : undefined,
+        background:
+          tier === "perfect"
+            ? `radial-gradient(120% 90% at 100% 0%, rgba(236,72,153,0.12), transparent 65%), linear-gradient(90deg, ${meta?.bgSoft}, transparent 50%), #16110a`
+            : tier
+              ? `linear-gradient(90deg, ${meta?.bgSoft}, transparent 50%), #16110a`
+              : undefined,
       }}
     >
       <span style={{ background: meta?.color ?? "#5a4d39" }} />
@@ -94,8 +100,12 @@ export default function DayRow({ log, goalsById, isToday }: Props) {
         <span
           className="display text-3xl leading-none px-3 py-1 rounded-md nums"
           style={{
-            background: tier === "great" ? "#f5b528" : meta?.bgSoft ?? "transparent",
-            color: tier === "great" ? "#1a1408" : meta?.color,
+            background:
+              tier === "great" || tier === "perfect"
+                ? "#f5b528"
+                : (meta?.bgSoft ?? "transparent"),
+            color:
+              tier === "great" || tier === "perfect" ? "#1a1408" : meta?.color,
           }}
         >
           {formatScore(log.score)}
