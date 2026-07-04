@@ -125,6 +125,15 @@
   .perfect-glow {
     animation: perfect-pulse 3.4s ease-in-out infinite;
   }
+
+  /* Degradê âmbar → rosa para o nome do tier "Perfeito" */
+  .perfect-text {
+    background-image: linear-gradient(100deg, #f5b528, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
 }
 
 @keyframes perfect-pulse {

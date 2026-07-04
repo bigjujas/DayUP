@@ -6,6 +6,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  email_verified: boolean;
+  onboarding_seen: boolean;
   created_at: string;
 }
 
@@ -22,13 +24,17 @@ export interface GoalEntry {
   goal_id: string;
   weight: number;
   level: number;
+  done_at: string | null; // "HH:MM:SS"
 }
 
 export interface DayLog {
-  id: string;
+  id: string | null;
   date: string; // YYYY-MM-DD
   status: DayStatus;
   score: number | null;
+  mood: string | null;
+  note: string | null;
+  finalized: boolean;
   entries: GoalEntry[];
 }
 
@@ -54,12 +60,32 @@ export const CATEGORY_META: Record<
 
 export const WEEKDAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
-export const LEVEL_OPTIONS: { value: GoalLevel; label: string; hint: string }[] = [
-  { value: 0, label: "Não feito", hint: "0%" },
-  { value: 0.4, label: "Fraco", hint: "40%" },
-  { value: 0.7, label: "Médio", hint: "70%" },
-  { value: 1, label: "Perfeito", hint: "100%" },
+// ── Mood (seletor da tela Hoje) ──────────────────────
+export const MOODS = ["😄", "🙂", "😐", "😞", "😫"] as const;
+
+// ── Effort levels (gesto principal do check-in) ──────
+export type EffortTone = "miss" | "weak" | "mid" | "perfect";
+
+export const LEVEL_OPTIONS: {
+  value: GoalLevel;
+  label: string;
+  hint: string;
+  emoji: string;
+  tone: EffortTone;
+  color: string;
+}[] = [
+  { value: 0, label: "Não feito", hint: "0%", emoji: "❌", tone: "miss", color: "#5a4d39" },
+  { value: 0.4, label: "Fraca", hint: "40%", emoji: "🟡", tone: "weak", color: "#c68410" },
+  { value: 0.7, label: "Média", hint: "70%", emoji: "🟠", tone: "mid", color: "#f5b528" },
+  { value: 1, label: "Perfeito", hint: "100%", emoji: "🟢", tone: "perfect", color: "#8ad36b" },
 ];
+
+// ── Peso da meta (pílula) ────────────────────────────
+export const WEIGHT_META: Record<1 | 2 | 3, { label: string; pips: number }> = {
+  3: { label: "Alta", pips: 3 },
+  2: { label: "Média", pips: 2 },
+  1: { label: "Baixa", pips: 1 },
+};
 
 // ── Tier helpers (match-history style) ───────────────
 export type Tier = "perfect" | "great" | "good" | "okay" | "rough";

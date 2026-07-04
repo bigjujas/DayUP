@@ -9,9 +9,10 @@ Cria (ou recria do zero) a conta:
     Senha: demo1234
     Nome:  João Demo
 
-Com 7 metas variadas e 30 dias de histórico — incluindo day offs,
+Com 7 metas variadas e 29 dias de histórico — incluindo day offs,
 um dia perdido (missed) que quebra streak antigo, e o streak atual
-em reconstrução. Faz update se a conta já existe.
+em reconstrução. O dia de hoje fica em aberto, sem registro, pronto
+para o check-in ao vivo na apresentação. Faz update se a conta já existe.
 """
 from __future__ import annotations
 
@@ -53,9 +54,9 @@ GOALS_SPEC = [
 ]
 
 # (dias_atrás, qualidade_média_alvo, status_especial)
-# Streak atual: 7 dias (0..6). Quebra em day 7 (missed). Recorde antigo: 22 dias (8..29).
+# Hoje (dia 0) fica de fora de propósito — sem DayLog, pronto para registro ao vivo.
+# Streak atual: 6 dias (1..6). Quebra em day 7 (missed). Recorde antigo: 22 dias (8..29).
 HISTORY: list[tuple[int, float | None, str | None]] = [
-    (0,  0.92, None),
     (1,  0.85, None),
     (2,  0.78, None),
     (3,  0.88, None),
@@ -155,7 +156,13 @@ def run() -> None:
                 db.add(DayLog(user_id=user.id, date=d, status=DayStatus.missed, score=None))
                 continue
 
-            log = DayLog(user_id=user.id, date=d, status=DayStatus.registered)
+            # Todos os dias do histórico já ficaram no passado — fechados.
+            log = DayLog(
+                user_id=user.id,
+                date=d,
+                status=DayStatus.registered,
+                finalized=True,
+            )
             db.add(log)
             db.flush()
 
@@ -176,7 +183,8 @@ def run() -> None:
         print(f"  Senha:    {DEMO_PASSWORD}")
         print(f"  Nome:     {DEMO_NAME}")
         print(f"  Metas:    {len(goals)}")
-        print(f"  Dias:     {len(HISTORY)} (de hoje ate {(today - timedelta(days=29)).isoformat()})")
+        print(f"  Dias:     {len(HISTORY)} (de {(today - timedelta(days=1)).isoformat()} ate {(today - timedelta(days=29)).isoformat()})")
+        print(f"  Hoje:     em aberto, sem registro")
         print()
     finally:
         db.close()

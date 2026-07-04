@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Bell, Calendar, CircleUserRound, Home, Target } from "lucide-react";
+import { Calendar, CircleUserRound, Home, Target } from "lucide-react";
 
 import { useMe } from "@/lib/queries";
 
@@ -55,12 +55,6 @@ export default function AppShell() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2.5">
-            <button
-              className="hidden sm:grid place-items-center w-9 h-9 rounded-lg bg-surface border border-border text-text-2 hover:border-border-2 hover:text-text transition-colors"
-              aria-label="Notificações"
-            >
-              <Bell size={16} />
-            </button>
             <div className="flex items-center gap-2.5 pl-1 pr-3 py-1 bg-surface border border-border rounded-full">
               <div
                 className="w-7 h-7 rounded-full grid place-items-center text-[11px] font-bold text-ink"

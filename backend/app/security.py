@@ -7,12 +7,12 @@ from typing import Any
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, HTTPException, Request, Response, status
-from itsdangerous import BadSignature, SignatureExpired, TimestampSigner
 from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.db import get_db
 from app.models import User
+from app.sessions import create_session, delete_session, read_session
 
 _hasher = PasswordHasher()
 
@@ -26,10 +26,6 @@ def verify_password(password_hash: str, password: str) -> bool:
         return _hasher.verify(password_hash, password)
     except VerifyMismatchError:
         return False
-
-
-def _signer(settings: Settings) -> TimestampSigner:
-    return TimestampSigner(settings.session_secret, salt="dayup.session")
 
 
 def _set_cookie(
@@ -52,17 +48,23 @@ def _set_cookie(
 
 
 def issue_session(response: Response, user: User, settings: Settings) -> str:
-    """Sets the session and CSRF cookies, returns the CSRF token (also exposed via header)."""
-    token = _signer(settings).sign(str(user.id)).decode("utf-8")
+    """
+    Cria a sessão no Redis e seta o cookie com o session_id opaco.
+    Retorna o CSRF token (também devolvido via header).
+    """
+    session_id = create_session(str(user.id), settings)
     csrf_token = secrets.token_urlsafe(32)
-    _set_cookie(response, settings.session_cookie_name, token, settings=settings, http_only=True)
-    # CSRF cookie is readable by JS so the SPA can echo it back as a header (double-submit pattern).
+    _set_cookie(response, settings.session_cookie_name, session_id, settings=settings, http_only=True)
+    # CSRF cookie é legível pelo JS pra ecoar no header (double-submit).
     _set_cookie(response, settings.csrf_cookie_name, csrf_token, settings=settings, http_only=False)
     response.headers[settings.csrf_header_name] = csrf_token
     return csrf_token
 
 
-def clear_session(response: Response, settings: Settings) -> None:
+def clear_session(request: Request, response: Response, settings: Settings) -> None:
+    """Invalida a sessão no Redis e limpa os cookies do browser."""
+    session_id = request.cookies.get(settings.session_cookie_name)
+    delete_session(session_id)
     # Browsers só aceitam o cookie de deleção se SameSite/Secure baterem com os do cookie original.
     for name in (settings.session_cookie_name, settings.csrf_cookie_name):
         response.delete_cookie(
@@ -73,17 +75,6 @@ def clear_session(response: Response, settings: Settings) -> None:
         )
 
 
-def _read_user_id_from_cookie(request: Request, settings: Settings) -> str | None:
-    raw = request.cookies.get(settings.session_cookie_name)
-    if not raw:
-        return None
-    try:
-        value = _signer(settings).unsign(raw, max_age=settings.session_max_age_seconds)
-    except (BadSignature, SignatureExpired):
-        return None
-    return value.decode("utf-8")
-
-
 _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 
@@ -92,7 +83,8 @@ def get_current_user(
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings),
 ) -> User:
-    user_id = _read_user_id_from_cookie(request, settings)
+    session_id = request.cookies.get(settings.session_cookie_name)
+    user_id = read_session(session_id)
     if not user_id:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Não autenticado.")
 

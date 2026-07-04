@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Coffee, CircleAlert } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { formatDate, formatScore, weekdayShort } from "@/lib/format";
 import { CATEGORY_META, TIER_META, tierFromScore, type DayLog, type Goal } from "@/lib/types";
@@ -8,11 +9,51 @@ type Props = {
   log: DayLog;
   goalsById: Map<string, Goal>;
   isToday?: boolean;
+  /** Abre o modal de detalhe (dias do histórico). */
+  onSelect?: () => void;
+  /** Quando não há onSelect, o card vira um link para esta rota (ex: tela "Hoje"). */
+  href?: string;
 };
 
-export default function DayRow({ log, goalsById, isToday }: Props) {
-  if (log.status === "day_off") return <DayOffRow date={log.date} isToday={isToday} />;
-  if (log.status === "missed") return <MissedRow date={log.date} isToday={isToday} />;
+// Casca clicável: vira <button> quando onSelect existe, senão <Link>.
+function RowShell({
+  onSelect,
+  href,
+  className,
+  style,
+  children,
+}: {
+  onSelect?: () => void;
+  href?: string;
+  className: string;
+  style?: CSSProperties;
+  children: ReactNode;
+}) {
+  if (onSelect) {
+    return (
+      <button type="button" onClick={onSelect} className={`w-full text-left ${className}`} style={style}>
+        {children}
+      </button>
+    );
+  }
+  return (
+    <Link to={href ?? "#"} className={className} style={style}>
+      {children}
+    </Link>
+  );
+}
+
+function firstLine(note: string): string {
+  return note.split("\n")[0];
+}
+
+export default function DayRow({ log, goalsById, isToday, onSelect, href }: Props) {
+  if (log.status === "day_off") {
+    return <DayOffRow date={log.date} isToday={isToday} onSelect={onSelect} href={href} />;
+  }
+  if (log.status === "missed") {
+    return <MissedRow date={log.date} isToday={isToday} onSelect={onSelect} href={href} />;
+  }
 
   const tier = tierFromScore(log.score);
   const meta = tier ? TIER_META[tier] : null;
@@ -26,7 +67,7 @@ export default function DayRow({ log, goalsById, isToday }: Props) {
         key={`${e.goal_id}-${i}`}
         title={goal?.name ?? "Meta arquivada"}
         className={[
-          "w-9 h-9 rounded-lg grid place-items-center text-base border relative",
+          "w-8 h-8 lg:w-9 lg:h-9 rounded-lg grid place-items-center text-sm lg:text-base border relative shrink-0",
           state === "featured"
             ? "border-primary/40 text-primary"
             : state === "done"
@@ -53,8 +94,9 @@ export default function DayRow({ log, goalsById, isToday }: Props) {
   });
 
   return (
-    <Link
-      to={`/app/check-in/${log.date}`}
+    <RowShell
+      onSelect={onSelect}
+      href={href ?? `/app/check-in/${log.date}`}
       className={[
         "grid grid-cols-[6px_1fr_auto] lg:grid-cols-[6px_168px_1fr_110px] bg-surface border border-border rounded-card overflow-hidden hover:-translate-y-px transition-all",
         tier === "perfect" ? "perfect-glow" : "hover:border-border-2",
@@ -68,13 +110,20 @@ export default function DayRow({ log, goalsById, isToday }: Props) {
               : undefined,
       }}
     >
-      <span style={{ background: meta?.color ?? "#5a4d39" }} />
+      <span
+        style={{
+          background: tier === "perfect" ? "linear-gradient(180deg, #f5b528, #f472b6)" : (meta?.color ?? "#5a4d39"),
+        }}
+      />
 
       <div className="p-3.5 flex flex-col gap-1.5 min-w-0">
         <div className="flex items-center gap-2">
           <div
-            className="display text-base lg:text-[16px] uppercase leading-none"
-            style={{ color: meta?.color }}
+            className={[
+              "display text-base lg:text-[16px] uppercase leading-none",
+              tier === "perfect" ? "perfect-text" : "",
+            ].join(" ")}
+            style={tier === "perfect" ? undefined : { color: meta?.color }}
           >
             {meta?.label ?? "—"}
           </div>
@@ -87,6 +136,15 @@ export default function DayRow({ log, goalsById, isToday }: Props) {
         <div className="text-[11px] text-muted font-mono">
           {log.entries.length} {log.entries.length === 1 ? "meta" : "metas"}
         </div>
+        {/* Quadradinhos de meta — visíveis no mobile (no desktop ficam na coluna dedicada) */}
+        {icons.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-0.5 lg:hidden">{icons}</div>
+        )}
+        {log.note && (
+          <div className="text-[11px] text-muted/90 line-clamp-1 italic">
+            “{firstLine(log.note)}”
+          </div>
+        )}
       </div>
 
       <div className="hidden lg:flex items-center gap-1.5 px-4 border-x border-border min-w-0">
@@ -101,23 +159,38 @@ export default function DayRow({ log, goalsById, isToday }: Props) {
           className="display text-3xl leading-none px-3 py-1 rounded-md nums"
           style={{
             background:
-              tier === "great" || tier === "perfect"
-                ? "#f5b528"
-                : (meta?.bgSoft ?? "transparent"),
-            color:
-              tier === "great" || tier === "perfect" ? "#1a1408" : meta?.color,
+              tier === "perfect"
+                ? "linear-gradient(100deg, #f5b528, #f472b6)"
+                : tier === "great"
+                  ? "#f5b528"
+                  : (meta?.bgSoft ?? "transparent"),
+            color: tier === "great" || tier === "perfect" ? "#1a1408" : meta?.color,
           }}
         >
           {formatScore(log.score)}
         </span>
       </div>
-    </Link>
+    </RowShell>
   );
 }
 
-function DayOffRow({ date, isToday }: { date: string; isToday?: boolean }) {
+function DayOffRow({
+  date,
+  isToday,
+  onSelect,
+  href,
+}: {
+  date: string;
+  isToday?: boolean;
+  onSelect?: () => void;
+  href?: string;
+}) {
   return (
-    <div className="grid grid-cols-[6px_1fr_auto] bg-surface border border-border rounded-card overflow-hidden">
+    <RowShell
+      onSelect={onSelect}
+      href={href ?? `/app/check-in/${date}`}
+      className="grid grid-cols-[6px_1fr_auto] bg-surface border border-border rounded-card overflow-hidden hover:border-border-2 transition-colors"
+    >
       <span style={{ background: "#6aa7e8" }} />
       <div className="p-3.5 flex flex-col gap-1">
         <div className="flex items-center gap-2">
@@ -133,13 +206,27 @@ function DayOffRow({ date, isToday }: { date: string; isToday?: boolean }) {
       <div className="grid place-items-center px-5" style={{ color: "#6aa7e8" }}>
         <Coffee size={20} />
       </div>
-    </div>
+    </RowShell>
   );
 }
 
-function MissedRow({ date, isToday }: { date: string; isToday?: boolean }) {
+function MissedRow({
+  date,
+  isToday,
+  onSelect,
+  href,
+}: {
+  date: string;
+  isToday?: boolean;
+  onSelect?: () => void;
+  href?: string;
+}) {
   return (
-    <div className="grid grid-cols-[6px_1fr_auto] bg-surface border border-border rounded-card overflow-hidden opacity-80">
+    <RowShell
+      onSelect={onSelect}
+      href={href ?? `/app/check-in/${date}`}
+      className="grid grid-cols-[6px_1fr_auto] bg-surface border border-border rounded-card overflow-hidden opacity-80 hover:opacity-100 hover:border-border-2 transition-all"
+    >
       <span style={{ background: "#e87a6a" }} />
       <div className="p-3.5 flex flex-col gap-1">
         <div className="flex items-center gap-2">
@@ -155,6 +242,6 @@ function MissedRow({ date, isToday }: { date: string; isToday?: boolean }) {
       <div className="grid place-items-center px-5" style={{ color: "#e87a6a" }}>
         <CircleAlert size={20} />
       </div>
-    </div>
+    </RowShell>
   );
 }

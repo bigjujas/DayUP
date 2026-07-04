@@ -4,6 +4,8 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useMe, useRegister } from "@/lib/queries";
 import { AuthField, AuthLayout } from "./Login";
 
+const PASSWORD_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,128}$/;
+
 export default function Register() {
   const me = useMe();
   const register = useRegister();
@@ -17,13 +19,20 @@ export default function Register() {
 
   const passwordsMatch = password.length > 0 && password === confirmPassword;
   const showMismatch = confirmPassword.length > 0 && !passwordsMatch;
+  const passwordOk = PASSWORD_RE.test(password);
+  const showWeakPassword = password.length >= 8 && !passwordOk;
   const canSubmit =
-    name.trim().length >= 1 && password.length >= 8 && passwordsMatch;
+    name.trim().length >= 2 && passwordOk && passwordsMatch;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
-    await register.mutateAsync({ name: name.trim(), email, password });
+    await register.mutateAsync({
+      name: name.trim(),
+      email,
+      password,
+      confirm_password: confirmPassword,
+    });
     navigate("/app", { replace: true });
   }
 
@@ -39,7 +48,7 @@ export default function Register() {
           value={name}
           onChange={setName}
           autoComplete="name"
-          minLength={1}
+          minLength={2}
           maxLength={30}
           helper="Como você quer aparecer no app."
         />
@@ -50,15 +59,22 @@ export default function Register() {
           onChange={setEmail}
           autoComplete="email"
         />
-        <AuthField
-          label="Senha"
-          type="password"
-          value={password}
-          onChange={setPassword}
-          autoComplete="new-password"
-          minLength={8}
-          helper="Mínimo 8 caracteres."
-        />
+        <div>
+          <AuthField
+            label="Senha"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            minLength={8}
+            helper="Mínimo 8 caracteres, com letras e números."
+          />
+          {showWeakPassword && (
+            <p className="text-sm text-rough mt-1.5">
+              A senha precisa ter letras e números.
+            </p>
+          )}
+        </div>
         <div>
           <AuthField
             label="Confirmar senha"

@@ -2,19 +2,21 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timezone
 
 from sqlalchemy import (
     ARRAY,
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
     Enum,
     Float,
     ForeignKey,
-    Integer,
     SmallInteger,
     String,
+    Text,
+    Time,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
@@ -52,6 +54,12 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(30), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    email_verified: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
+    onboarding_seen: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="false"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_now, nullable=False
     )
@@ -104,6 +112,9 @@ class DayLog(Base):
     date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     status: Mapped[DayStatus] = mapped_column(Enum(DayStatus, name="day_status"), nullable=False)
     score: Mapped[float | None] = mapped_column(Float)
+    mood: Mapped[str | None] = mapped_column(String(8))
+    note: Mapped[str | None] = mapped_column(Text)
+    finalized: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_now, nullable=False
     )
@@ -137,6 +148,8 @@ class GoalEntry(Base):
     # Snapshot do peso da meta no momento do check-in (metas podem mudar de peso depois).
     weight: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     level: Mapped[float] = mapped_column(Float, nullable=False)
+    # Horário em que a meta foi realizada (opcional, nunca obrigatório).
+    done_at: Mapped[time | None] = mapped_column(Time)
 
     day_log: Mapped[DayLog] = relationship(back_populates="entries")
     goal: Mapped[Goal] = relationship(back_populates="entries")

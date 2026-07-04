@@ -7,9 +7,12 @@ import {
   Trash2,
   TrendingUp,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import DayRow from "@/components/DayRow";
+import DayDetailModal from "@/components/DayDetailModal";
+import Onboarding from "@/components/Onboarding";
+import RemindBanner from "@/components/RemindBanner";
 import Sparkline from "@/components/Sparkline";
 import { formatDate, formatScore, todayISO, variation, weekdayShort } from "@/lib/format";
 import {
@@ -21,12 +24,16 @@ import {
 } from "@/lib/queries";
 import type { DayLog, Goal } from "@/lib/types";
 
+const REMINDER_KEY = (date: string) => `dayup:reminder-dismissed:${date}`;
+
 export default function Home() {
   const me = useMe();
   const stats = useStats();
   const logs = useDayLogs(14);
   const goals = useGoals({ includeArchived: true });
   const deleteDay = useDeleteDayLog();
+
+  const [selected, setSelected] = useState<DayLog | null>(null);
 
   const goalsById = useMemo(() => {
     const m = new Map<string, Goal>();
@@ -38,6 +45,25 @@ export default function Home() {
   const todayLog = logs.data?.find((l) => l.date === today);
   const otherLogs = (logs.data ?? []).filter((l) => l.date !== today);
   const handle = me.data?.name ?? "";
+
+  // Onboarding: aparece enquanto a conta não tiver dispensado (onboarding_seen).
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  useEffect(() => {
+    if (!me.data) return;
+    setShowOnboarding(!me.data.onboarding_seen);
+  }, [me.data]);
+
+  // Banner de lembrete: após 18h, dia não registrado/não day-off, não dispensado hoje.
+  const todayUnclosed = !todayLog || todayLog.status === "missed";
+  const [bannerDismissed, setBannerDismissed] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem(REMINDER_KEY(today)) === "1",
+  );
+  const showReminder = new Date().getHours() >= 18 && todayUnclosed && !bannerDismissed;
+
+  function dismissReminder() {
+    localStorage.setItem(REMINDER_KEY(today), "1");
+    setBannerDismissed(true);
+  }
 
   const sparkSeries = (logs.data ?? [])
     .filter((l) => l.score !== null)
@@ -56,6 +82,9 @@ export default function Home() {
           Como foi seu <span className="text-primary">dia</span>?
         </h1>
       </header>
+
+      {/* Lembrete pós-18h pra fechar o dia */}
+      {showReminder && <RemindBanner onDismiss={dismissReminder} />}
 
       {/* KPIs */}
       <Kpis sparkSeries={sparkSeries} />
@@ -78,6 +107,7 @@ export default function Home() {
             log={todayLog}
             goalsById={goalsById}
             isToday
+            href="/app/check-in"
             onDelete={() => deleteDay.mutate(todayLog.date)}
           />
         ) : (
@@ -91,10 +121,21 @@ export default function Home() {
             key={log.id}
             log={log}
             goalsById={goalsById}
+            onSelect={() => setSelected(log)}
             onDelete={() => deleteDay.mutate(log.date)}
           />
         ))}
       </div>
+
+      {selected && (
+        <DayDetailModal
+          log={selected}
+          goalsById={goalsById}
+          onClose={() => setSelected(null)}
+        />
+      )}
+
+      {showOnboarding && <Onboarding onClose={() => setShowOnboarding(false)} />}
     </div>
   );
 
@@ -177,16 +218,20 @@ function DayRowWithDelete({
   log,
   goalsById,
   isToday,
+  onSelect,
+  href,
   onDelete,
 }: {
   log: DayLog;
   goalsById: Map<string, Goal>;
   isToday?: boolean;
+  onSelect?: () => void;
+  href?: string;
   onDelete: () => void;
 }) {
   return (
     <div className="relative group">
-      <DayRow log={log} goalsById={goalsById} isToday={isToday} />
+      <DayRow log={log} goalsById={goalsById} isToday={isToday} onSelect={onSelect} href={href} />
       <button
         type="button"
         onClick={(e) => {

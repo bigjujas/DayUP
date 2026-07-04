@@ -37,9 +37,48 @@ export function useLogin() {
 export function useRegister() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { name: string; email: string; password: string }) =>
-      apiFetch<User>("/auth/register", { method: "POST", body: payload }),
+    mutationFn: (payload: {
+      name: string;
+      email: string;
+      password: string;
+      confirm_password: string;
+    }) => apiFetch<User>("/auth/register", { method: "POST", body: payload }),
     onSuccess: (user) => qc.setQueryData(qk.me, user),
+  });
+}
+
+export function useMarkOnboardingSeen() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiFetch<void>("/auth/me/onboarding-seen", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.me }),
+  });
+}
+
+export function useUpdateName() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => apiFetch<User>("/auth/me", { method: "PATCH", body: { name } }),
+    onSuccess: (user) => qc.setQueryData(qk.me, user),
+  });
+}
+
+export function useChangeEmail() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { new_email: string; confirm_new_email: string; password: string }) =>
+      apiFetch<User>("/auth/me/change-email", { method: "POST", body: payload }),
+    onSuccess: (user) => qc.setQueryData(qk.me, user),
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (payload: {
+      current_password: string;
+      new_password: string;
+      confirm_new_password: string;
+    }) => apiFetch<void>("/auth/me/change-password", { method: "POST", body: payload }),
   });
 }
 
@@ -90,17 +129,36 @@ export function useStats() {
   });
 }
 
-export function useCheckIn() {
+type SaveDayPayload = {
+  date: string;
+  mood: string | null;
+  note: string | null;
+  entries: { goal_id: string; level: number; done_at: string | null }[];
+};
+
+function invalidateDay(qc: ReturnType<typeof useQueryClient>, date: string) {
+  qc.invalidateQueries({ queryKey: qk.dayLog(date) });
+  qc.invalidateQueries({ queryKey: qk.dayLogs });
+  qc.invalidateQueries({ queryKey: qk.stats });
+}
+
+// Salva progresso parcial (não finaliza).
+export function useSaveDay() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: {
-      date: string;
-      entries: { goal_id: string; level: number }[];
-    }) => apiFetch<DayLog>("/day-logs/check-in", { method: "POST", body: payload }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: qk.dayLogs });
-      qc.invalidateQueries({ queryKey: qk.stats });
-    },
+    mutationFn: ({ date, ...body }: SaveDayPayload) =>
+      apiFetch<DayLog>(`/day-logs/${date}`, { method: "PUT", body }),
+    onSuccess: (data) => invalidateDay(qc, data.date),
+  });
+}
+
+// Consolida o dia e marca finalized=true.
+export function useFinalizeDay() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (date: string) =>
+      apiFetch<DayLog>(`/day-logs/${date}/finalize`, { method: "POST" }),
+    onSuccess: (data) => invalidateDay(qc, data.date),
   });
 }
 
@@ -108,11 +166,8 @@ export function useDayOff() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (date: string) =>
-      apiFetch<DayLog>("/day-logs/day-off", { method: "POST", body: { date } }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: qk.dayLogs });
-      qc.invalidateQueries({ queryKey: qk.stats });
-    },
+      apiFetch<DayLog>(`/day-logs/${date}/dayoff`, { method: "POST" }),
+    onSuccess: (data) => invalidateDay(qc, data.date),
   });
 }
 
